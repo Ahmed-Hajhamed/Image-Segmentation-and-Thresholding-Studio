@@ -31,7 +31,7 @@ def simultaneous_region_growing(image, seed_points, threshold=10):
 # --- Main ---
 
 # Load grayscale image
-image = cv2.imread('images/boot.jpg', cv2.IMREAD_GRAYSCALE)
+# image = cv2.imread('images/boot.jpg', cv2.IMREAD_GRAYSCALE)
 # image = np.array([ 
     # [0, 0, 5, 6, 7], 
     # [1, 1, 5, 8, 7], 
@@ -40,32 +40,37 @@ image = cv2.imread('images/boot.jpg', cv2.IMREAD_GRAYSCALE)
     # [0, 1, 5, 6, 5] 
 # ], dtype=np.uint8)
 # Step 1: Find 2 peaks
-hist = cv2.calcHist([image], [0], None, [256], [0, 256]).flatten()
-top2_indices = np.argsort(hist)[-2:][::-1]
+# hist = cv2.calcHist([image], [0], None, [256], [0, 256]).flatten()
 
-# Step 2: Pick one seed per peak
-seed_points = []
-for peak in top2_indices:
-    points = np.argwhere(image == peak)
-    if len(points) > 0:
-        y, x = points[0]  # pick the first match (could randomize)
-        seed_points.append((y, x, peak))
+def ApplyRegionGrowing(image, histogram, seed_points=None):
+    if seed_points is None:
+        top2_indices = np.argsort(histogram)[-2:][::-1]
 
-# Step 3: Simultaneous region growing
-labels = simultaneous_region_growing(image, seed_points, threshold=10)
+        # Step 2: Pick one seed per peak
+        seed_points = []
+        for peak in top2_indices:
+            points = np.argwhere(image == peak)
+            if len(points) > 0:
+                y, x = points[0]  # pick the first match (could randomize)
+                seed_points.append((y, x, peak))
 
-h,w = image.shape
-mask = np.zeros((h+2, w+2), np.uint8)  # mask must be 2 pixels larger than the image!
+        # Step 3: Simultaneous region growing
+    labels = simultaneous_region_growing(image, seed_points, threshold=10)
+    color_labels = cv2.applyColorMap((labels * 127).astype(np.uint8), cv2.COLORMAP_JET)
+    return color_labels
 
-# (image, mask, seedPoint(x,y), newVal, loDiff, upDiff)
-cv2.floodFill(image, mask, seedPoint=(0,0), newVal=(255,0,0), loDiff=(10,10,10), upDiff=(10,10,10))
+# h,w = image.shape
+# mask = np.zeros((h+2, w+2), np.uint8)  # mask must be 2 pixels larger than the image!
 
-cv2.imshow('FloodFill result', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-# Show result
-color_labels = cv2.applyColorMap((labels * 127).astype(np.uint8), cv2.COLORMAP_JET)
+# # (image, mask, seedPoint(x,y), newVal, loDiff, upDiff)
+# cv2.floodFill(image, mask, seedPoint=(0,0), newVal=(255,0,0), loDiff=(10,10,10), upDiff=(10,10,10))
 
-cv2.imshow('Simultaneous 2-Seed Growing', color_labels)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.imshow('FloodFill result', image)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+# # Show result
+# color_labels = cv2.applyColorMap((labels * 127).astype(np.uint8), cv2.COLORMAP_JET)
+
+# cv2.imshow('Simultaneous 2-Seed Growing', color_labels)
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()

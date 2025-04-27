@@ -3,8 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def otsu_global_thresholding(image):
-    histogram = np.histogram(image.flatten(), bins=256, range=[0, 256])[0]
+def otsu_global_thresholding(image, histogram):
     height, width = image.shape
     image_size = height * width
     probabilities = histogram / image_size
@@ -68,39 +67,39 @@ def otsu_local_thresholding(img, num_blocks=4):
 
     return output
 
-image = cv2.imread('Images/spain.jpg', cv2.IMREAD_GRAYSCALE)
-histogram = cv2.calcHist([image], [0], None, [256], [0, 256])
-# optimal_threshold = otsu_global_thresholding(image)
+# image = cv2.imread('Images/spain.jpg', cv2.IMREAD_GRAYSCALE)
+# histogram = cv2.calcHist([image], [0], None, [256], [0, 256])
+# # optimal_threshold = otsu_global_thresholding(image)
 
-otsu_threshold, otsu_binary_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+# otsu_threshold, otsu_binary_image = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-binary_image = otsu_global_thresholding(image)
-binary_image2 = otsu_local_thresholding(image, num_blocks=4)
+# binary_image = otsu_global_thresholding(image)
+# binary_image2 = otsu_local_thresholding(image, num_blocks=4)
 
-plt.figure(figsize=(12, 5))
-plt.subplot(1, 4, 1)
-plt.plot(histogram, color='gray')
+# plt.figure(figsize=(12, 5))
+# plt.subplot(1, 4, 1)
+# plt.plot(histogram, color='gray')
 
-# plt.axvline(x=optimal_threshold, color='red', linestyle='--')
-plt.axvline(x=otsu_threshold, color='blue', linestyle='--')
+# # plt.axvline(x=optimal_threshold, color='red', linestyle='--')
+# plt.axvline(x=otsu_threshold, color='blue', linestyle='--')
 
-plt.title('Histogram with Optimal Threshold')
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-# plt.legend([f'Threshold: {optimal_threshold}'])
+# plt.title('Histogram with Optimal Threshold')
+# plt.xlabel('Pixel Intensity')
+# plt.ylabel('Frequency')
+# # plt.legend([f'Threshold: {optimal_threshold}'])
 
-plt.subplot(1, 4, 2)
-plt.imshow(binary_image, cmap='gray')
-plt.title('Thresholded Image')
-plt.axis('off')
-plt.subplot(1, 4, 3)
-plt.imshow(binary_image2, cmap='gray')
-plt.title('Local Thresholded Image')
-plt.axis('off')
+# plt.subplot(1, 4, 2)
+# plt.imshow(binary_image, cmap='gray')
+# plt.title('Thresholded Image')
+# plt.axis('off')
+# plt.subplot(1, 4, 3)
+# plt.imshow(binary_image2, cmap='gray')
+# plt.title('Local Thresholded Image')
+# plt.axis('off')
 
-plt.subplot(1, 4, 4)
-plt.imshow(otsu_binary_image, cmap='gray')
-plt.title('Otsu Thresholded Image')
-plt.axis('off')
+# plt.subplot(1, 4, 4)
+# plt.imshow(otsu_binary_image, cmap='gray')
+# plt.title('Otsu Thresholded Image')
+# plt.axis('off')
 
-plt.show()
+# plt.show()
