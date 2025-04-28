@@ -1,10 +1,5 @@
-import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
-
-# image = cv2.imread('Images/boot.jpg', cv2.IMREAD_GRAYSCALE)
-# hist = np.histogram(image.flatten(), bins=256, range=[0, 256])[0]
 
 def OptimalThresholding(image):
     height, width = image.shape
@@ -15,7 +10,6 @@ def OptimalThresholding(image):
     background_pixels_sum = background_pixels_array.sum()
     meu_background = int(background_pixels_sum / 4.0)
 
-    object_pixels = []
     object_pixels_sum = image.sum() - background_pixels_sum
     object_pixels_count = (height * width) - 4  
     meu_objects = int(object_pixels_sum / object_pixels_count)
@@ -36,18 +30,15 @@ def calculate_new_threshold(image, current_threshold, height, width):
                 object_pixels.append(image[i, j])
     background_pixels_array = np.array(background_pixels, dtype=np.uint8)
     meu_background = int(np.mean(background_pixels_array))
-    print("Background mean:", meu_background)
+
     object_pixels_array = np.array(object_pixels, dtype=np.uint8)
     meu_objects = int(np.mean(object_pixels_array))
-    print("Object mean:", meu_objects)
 
     new_threshold = int((meu_background + meu_objects) / 2)
 
     if new_threshold == current_threshold:
-        print("Threshold converged:", new_threshold)
         return new_threshold
     else:
-        print("New threshold:", new_threshold)
         return calculate_new_threshold(image, new_threshold, height, width)
     
 def apply_threshold(image, new_threshold, height, width):
@@ -58,24 +49,3 @@ def apply_threshold(image, new_threshold, height, width):
             else:
                 image[i, j] = 255
     return image
-
-# # Create figure with 2 subplots
-# plt.figure(figsize=(12, 5))
-
-# # Plot histogram with threshold line
-# plt.subplot(1, 2, 1)
-# plt.plot(hist)
-# plt.title('Histogram')
-# plt.xlabel('Pixel Value')
-# plt.ylabel('Frequency')
-# plt.axvline(x=new_threshold, color='r', linestyle='--', label=f'Threshold: {new_threshold}')
-# plt.legend()
-
-# # Plot thresholded image
-# plt.subplot(1, 2, 2)
-# plt.imshow(image, cmap='gray')
-# plt.title('Thresholded Image')
-# plt.axis('off')
-
-# plt.tight_layout()
-# plt.show()

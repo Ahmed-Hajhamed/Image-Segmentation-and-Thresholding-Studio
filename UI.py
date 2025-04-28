@@ -1,7 +1,5 @@
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import (QMainWindow, QApplication, QLabel, QWidget, QGridLayout, QSlider, QPushButton, QComboBox, QFrame)
-from qt_material import apply_stylesheet
-import cv2
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import (QLabel, QWidget, QGridLayout, QSlider, QPushButton, QComboBox, QFrame, QCheckBox)
 
 COMBOBOX_STYLESHEET = "QComboBox { color: white; font-size: 14px; font: bold}" \
                             " QComboBox QAbstractItemView { color: white; font-size: 14px; }"
@@ -29,9 +27,13 @@ class ImageSegmentationUI(object):
 
         self.applyThresholdingButton = QPushButton("Apply Thresholding")
 
-        self.thresholdingControlsLayout.addWidget(self.thresholdingControlsLabel, 0, 0, 1, 1)
-        self.thresholdingControlsLayout.addWidget(self.thresholdingMethodComboBox, 1, 0, 1, 1)
-        self.thresholdingControlsLayout.addWidget(self.applyThresholdingButton, 2, 0, 1, 1)
+        self.localThresholdingCheckBox = QCheckBox("Local Thresholding")
+        self.localThresholdingCheckBox.setStyleSheet("QCheckBox { color: white; font-size: 14px; font: bold; }")
+
+        self.thresholdingControlsLayout.addWidget(self.thresholdingControlsLabel, 0, 0, 1, 2)
+        self.thresholdingControlsLayout.addWidget(self.localThresholdingCheckBox, 1, 0, 1, 1)
+        self.thresholdingControlsLayout.addWidget(self.thresholdingMethodComboBox, 2, 0, 1, 2)
+        self.thresholdingControlsLayout.addWidget(self.applyThresholdingButton, 3, 0, 1, 2)
 
         self.segmentationControlsLabel = QLabel("Segmentation Controls")
         self.segmentationControlsLabel.setStyleSheet(LABEL_STYLESHEET)
@@ -80,18 +82,3 @@ def CreateLineSeparator(orientation):
         line.setFrameShape(QFrame.VLine)
     line.setFrameShadow(QFrame.Sunken)
     return line
-
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    apply_stylesheet(app, theme='dark_medical.xml')
-    MainWindow = QMainWindow()
-    ui = ImageSegmentationUI()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    image = cv2.imread('images/boot.jpg', cv2.IMREAD_GRAYSCALE)
-    ui.originalImageLabel.setPixmap(QtGui.QPixmap('images/boot.jpg'))
-    ui.processedImageLabel.setPixmap(QtGui.QPixmap('images/boot.jpg'))
-    ui.originalImageLabel.setScaledContents(True)
-    ui.processedImageLabel.setScaledContents(True)
-    sys.exit(app.exec_())

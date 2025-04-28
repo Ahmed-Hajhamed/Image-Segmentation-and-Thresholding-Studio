@@ -7,6 +7,9 @@ import UI
 import RegionGrowing as rg
 import OptimalThresholding as ot
 import OtsuThresholding as otsu
+import SpectralThresholding as st
+from qt_material import apply_stylesheet
+
 
 class MainWindow(QMainWindow, UI.ImageSegmentationUI):
     def __init__(self):
@@ -30,11 +33,26 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
 
     def ApplyThresholding(self, threshold_type):
         if self.image is not None:
-            if threshold_type == "Otsu Thresholding":
-                self.processedImage = otsu.otsu_global_thresholding(self.image, self.histogram)
+            if self.localThresholdingCheckBox.isChecked():
+                if threshold_type == "Otsu Thresholding":
+                    self.processedImage = otsu.local_thresholding(self.image, number_of_blocks=4, thresholding_method='Otsu Thresholding')
 
-            elif threshold_type == "Optimal Thresholding":
-                self.processedImage = ot.OptimalThresholding(self.image)[0]
+                elif threshold_type == "Optimal Thresholding":
+                    self.processedImage = otsu.local_thresholding(self.image, number_of_blocks=4, thresholding_method='Optimal Thresholding')
+
+                elif threshold_type == "Spectral Thresholding":
+                    self.processedImage = otsu.local_thresholding(self.image, number_of_blocks=4,
+                                                                   thresholding_method='Spectral Thresholding', number_of_thresholds=2)
+
+            else:
+                if threshold_type == "Otsu Thresholding":
+                    self.processedImage = otsu.otsu_global_thresholding(self.image, self.histogram)
+
+                elif threshold_type == "Optimal Thresholding":
+                    self.processedImage = ot.OptimalThresholding(self.image)[0]
+
+                elif threshold_type == "Spectral Thresholding":
+                    self.processedImage = st.spectral_thresholding(self.image, self.histogram, number_of_thresholds=2)    
 
             self.DisplayImage(self.processedImage, self.processedImageLabel)
 
@@ -47,7 +65,6 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
 
     def DisplayImage(self, image, label):
         if image is not None:
-            # Check if image is grayscal5e or RGB
             if len(image.shape) == 2:  # Grayscale (height, width)
                 print("Grayscale image detected")
                 height, width = image.shape
@@ -67,5 +84,6 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
+    apply_stylesheet(app, theme='dark_blue.xml')
     window.show()
     sys.exit(app.exec_())
