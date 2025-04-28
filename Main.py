@@ -26,52 +26,51 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
         file_name, _ = QFileDialog.getOpenFileName(self, "Open Image File", "Images/", "Images (*.png *.jpg *.jpeg *.bmp *.webp)")
         if file_name:
             self.image = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
-            self.histogram = np.histogram(self.image.flatten(), bins=256, range=[0, 256])[0]
+            self.histogram = np.histogram(self.image.copy().flatten(), bins=256, range=[0, 256])[0]
 
             self.DisplayImage(self.image, self.originalImageLabel)
 
-
     def ApplyThresholding(self, threshold_type):
         if self.image is not None:
+            image = self.image.copy()
             if self.localThresholdingCheckBox.isChecked():
                 if threshold_type == "Otsu Thresholding":
-                    self.processedImage = otsu.local_thresholding(self.image, number_of_blocks=4, thresholding_method='Otsu Thresholding')
+                    self.processedImage = otsu.local_thresholding(image, number_of_blocks=4, thresholding_method='Otsu Thresholding')
 
                 elif threshold_type == "Optimal Thresholding":
-                    self.processedImage = otsu.local_thresholding(self.image, number_of_blocks=4, thresholding_method='Optimal Thresholding')
+                    self.processedImage = otsu.local_thresholding(image, number_of_blocks=4, thresholding_method='Optimal Thresholding')
 
                 elif threshold_type == "Spectral Thresholding":
-                    self.processedImage = otsu.local_thresholding(self.image, number_of_blocks=4,
+                    self.processedImage = otsu.local_thresholding(image, number_of_blocks=4,
                                                                    thresholding_method='Spectral Thresholding', number_of_thresholds=2)
 
             else:
                 if threshold_type == "Otsu Thresholding":
-                    self.processedImage = otsu.otsu_global_thresholding(self.image, self.histogram)
+                    self.processedImage = otsu.otsu_global_thresholding(image, self.histogram)
 
                 elif threshold_type == "Optimal Thresholding":
-                    self.processedImage = ot.OptimalThresholding(self.image)[0]
+                    self.processedImage = ot.OptimalThresholding(image)[0]
 
                 elif threshold_type == "Spectral Thresholding":
-                    self.processedImage = st.spectral_thresholding(self.image, self.histogram, number_of_thresholds=2)    
+                    self.processedImage = st.spectral_thresholding(image, self.histogram, number_of_thresholds=2)    
 
             self.DisplayImage(self.processedImage, self.processedImageLabel)
 
     def ApplySegmentation(self, method):
+        image = self.image.copy()
         if self.image is not None:
             if method == "Region Growing":
-                self.processedImage = rg.ApplyRegionGrowing(self.image, self.histogram)
+                self.processedImage = rg.ApplyRegionGrowing(image, self.histogram)
                 
             self.DisplayImage(self.processedImage, self.processedImageLabel)
 
     def DisplayImage(self, image, label):
         if image is not None:
             if len(image.shape) == 2:  # Grayscale (height, width)
-                print("Grayscale image detected")
                 height, width = image.shape
                 bytes_per_line = width
                 q_image = QtGui.QImage(image.data, width, height, bytes_per_line, QtGui.QImage.Format_Grayscale8)
             else:  # RGB (height, width, channels)
-                print("RGB image detected")
                 height, width, channels = image.shape
                 bytes_per_line = channels * width
                 q_image = QtGui.QImage(image.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)

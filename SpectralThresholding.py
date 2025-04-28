@@ -13,7 +13,7 @@ def spectral_thresholding(grayscale_image, histogram, number_of_thresholds=2):
     num_peaks = min(number_of_thresholds + 1, len(peaks)) # number of peaks is num_thresholds + 1
     main_peaks = peaks[sorted_indices[:num_peaks]]
     main_peaks.sort()  # Sort peaks by intensity values
-    
+
     # Calculate thresholds as midpoints between consecutive peaks
     thresholds = []
     for i in range(len(main_peaks) - 1):
