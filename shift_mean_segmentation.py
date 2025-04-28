@@ -3,6 +3,42 @@ import cv2
 import matplotlib.pyplot as plt
 from time import time
 from numba import jit, prange
+from PyQt5.QtCore import QThread, pyqtSignal
+
+
+class MeanShiftWorker(QThread):
+    finished = pyqtSignal(np.ndarray)  # لما يكمل, يرجع صورتين: segmented, segmented_with_boundaries
+    progress = pyqtSignal(str)  # لو تبغى تبعت رسائل نصية أثناء الشغل
+
+    def __init__(self, img, spatial_bandwidth=0.1, color_bandwidth=0.1, sampling_ratio=0.1, boundary_thickness=2):
+        super().__init__()
+        self.img = img
+        self.spatial_bandwidth = spatial_bandwidth
+        self.color_bandwidth = color_bandwidth
+        self.sampling_ratio = sampling_ratio
+        self.boundary_thickness = boundary_thickness
+
+    def run(self):
+        """
+        هذه الدالة تشتغل لما نستدعي worker.start()
+        """
+        self.progress.emit("Starting Mean Shift Segmentation...")
+
+        try:
+            segmented = mean_shift_segmentation(
+                self.img,
+                spatial_bandwidth=self.spatial_bandwidth,
+                color_bandwidth=self.color_bandwidth,
+                sampling_ratio=self.sampling_ratio,
+                boundary_thickness=self.boundary_thickness
+            )
+
+            self.progress.emit("Mean Shift Segmentation completed!")
+            self.finished.emit(segmented)
+
+        except Exception as e:
+            self.progress.emit(f"Error: {str(e)}")
+
 
 @jit(nopython=True)
 def mean_shift_point(point, points, spatial_bandwidth, color_bandwidth):
@@ -141,7 +177,13 @@ def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sam
     """
     Perform simplified mean shift segmentation with white boundaries
     """
-    h, w, c = img.shape
+    # Limit the size of the image
+    max_size = 800  # Maximum dimension (width or height)
+    h, w, _ = img.shape
+    if max(h, w) > max_size:
+        scale = max_size / max(h, w)
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+    h, w, _ = img.shape
     
     # Set a purple background like in the reference image
     purple_background = np.ones_like(img) * np.array([75, 35, 85])  # Approximate purple color
@@ -181,7 +223,7 @@ def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sam
     
     # Assign cluster labels to each pixel
     label_matrix, cluster_colors = assign_labels(img, features, shifted_features)
-    
+
     # Create the segmented image
     segmented = np.copy(purple_background)
     
@@ -198,14 +240,67 @@ def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sam
                 segmented[y, x] = cluster_colors[cluster_idx] * 255
     
     # Detect boundaries
-    boundaries = detect_boundaries(label_matrix)
+    # boundaries = detect_boundaries(label_matrix)
     
     # Dilate boundaries for thickness
-    kernel = np.ones((boundary_thickness, boundary_thickness), np.uint8)
-    thick_boundaries = cv2.dilate(boundaries, kernel, iterations=1)
+    # kernel = np.ones((boundary_thickness, boundary_thickness), np.uint8)
+    # thick_boundaries = cv2.dilate(boundaries, kernel, iterations=1)
     
     # Apply white boundaries
-    segmented_with_boundaries = segmented.copy()
-    segmented_with_boundaries[thick_boundaries == 1] = [255, 255, 255]  # White
+    # segmented_with_boundaries = segmented.copy()
+    # segmented_with_boundaries[thick_boundaries == 1] = [255, 255, 255]  # White
     
-    return segmented.astype(np.uint8), segmented_with_boundaries.astype(np.uint8)
+    # return segmented.astype(np.uint8), segmented_with_boundaries.astype(np.uint8)
+    return segmented.astype(np.uint8)
+
+
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtGui import QPixmap, QImage
+import sys
+
+def np_to_qimage(np_img):
+    h, w, ch = np_img.shape
+    bytes_per_line = ch * w
+    return QImage(np_img.data, w, h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Mean Shift Segmentation with QThread")
+
+        self.label = QLabel("No Image")
+        self.button = QPushButton("Start Segmentation")
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+        layout.addWidget(self.button)
+        self.setLayout(layout)
+
+        # Load image (غير المسار حسب صورتك)
+        self.img = cv2.imread('Images/bizon2.jpeg')
+        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
+
+        self.button.clicked.connect(self.start_segmentation)
+
+    def start_segmentation(self):
+        self.worker = MeanShiftWorker(self.img, spatial_bandwidth=0.05, color_bandwidth=0.1, sampling_ratio=0.05)
+        self.worker.progress.connect(self.report_progress)
+        self.worker.finished.connect(self.display_result)
+        self.worker.start()
+
+    def report_progress(self, message):
+        print(message)
+
+    def display_result(self, segmented):
+        print("Displaying result...")
+        qimg = np_to_qimage(segmented)
+        pixmap = QPixmap.fromImage(qimg)
+        self.label.setPixmap(pixmap)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
+
