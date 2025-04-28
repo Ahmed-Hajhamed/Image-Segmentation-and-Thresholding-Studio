@@ -10,7 +10,7 @@ LABEL_STYLESHEET = "QLabel { color: white; font-size: 14px; font: bold; }"
 class ImageSegmentationUI(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("Image Segmentation and Thresholding")
-        MainWindow.resize(1000, 800)
+        MainWindow.setFixedSize(1000, 800)
 
         self.centralwidget = QWidget(MainWindow)
         self.mainGridLayout = QGridLayout(self.centralwidget)

@@ -27,34 +27,43 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
 
             self.DisplayImage(self.image, self.originalImageLabel)
 
-    def DisplayImage(self, image, label):
-        # Check if image is grayscale or RGB
-        if len(image.shape) == 2:  # Grayscale (height, width)
-            height, width = image.shape
-            bytes_per_line = width
-            q_image = QtGui.QImage(image.data, width, height, bytes_per_line, QtGui.QImage.Format_Grayscale8)
-        else:  # RGB (height, width, channels)
-            height, width, channels = image.shape
-            bytes_per_line = channels * width
-            q_image = QtGui.QImage(image.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
-            
-        pixmap = QtGui.QPixmap.fromImage(q_image)
-        label.setPixmap(pixmap)
-        label.setScaledContents(True)
 
     def ApplyThresholding(self, threshold_type):
         if self.image is not None:
             if threshold_type == "Otsu Thresholding":
                 self.processedImage = otsu.otsu_global_thresholding(self.image, self.histogram)
+
             elif threshold_type == "Optimal Thresholding":
                 self.processedImage = ot.OptimalThresholding(self.image)[0]
+
             self.DisplayImage(self.processedImage, self.processedImageLabel)
 
     def ApplySegmentation(self, method):
         if self.image is not None:
             if method == "Region Growing":
                 self.processedImage = rg.ApplyRegionGrowing(self.image, self.histogram)
+                
+            self.DisplayImage(self.processedImage, self.processedImageLabel)
 
+    def DisplayImage(self, image, label):
+        if image is not None:
+            # Check if image is grayscal5e or RGB
+            if len(image.shape) == 2:  # Grayscale (height, width)
+                print("Grayscale image detected")
+                height, width = image.shape
+                bytes_per_line = width
+                q_image = QtGui.QImage(image.data, width, height, bytes_per_line, QtGui.QImage.Format_Grayscale8)
+            else:  # RGB (height, width, channels)
+                print("RGB image detected")
+                height, width, channels = image.shape
+                bytes_per_line = channels * width
+                q_image = QtGui.QImage(image.data, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
+                
+            pixmap = QtGui.QPixmap.fromImage(q_image)
+            label.setPixmap(pixmap)
+            label.setScaledContents(True)
+
+            
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()

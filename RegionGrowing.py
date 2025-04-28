@@ -53,6 +53,7 @@ def ApplyRegionGrowing(image, histogram, seed_points=None):
             if len(points) > 0:
                 y, x = points[0]  # pick the first match (could randomize)
                 seed_points.append((y, x, peak))
+                print(seed_points)
 
         # Step 3: Simultaneous region growing
     labels = simultaneous_region_growing(image, seed_points, threshold=10)
