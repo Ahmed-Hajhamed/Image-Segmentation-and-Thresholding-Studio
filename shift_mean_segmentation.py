@@ -98,7 +98,7 @@ def batch_mean_shift(points, spatial_bandwidth, color_bandwidth, max_iterations=
         
     return shifted_points
 
-def assign_labels(img, points, shifted_points):
+def assign_labels(img, shifted_points):
     """
     Assign each pixel in the image to the closest shifted feature point
     """
@@ -151,24 +151,6 @@ def assign_labels(img, points, shifted_points):
     
     return label_matrix, cluster_colors
 
-def detect_boundaries(label_matrix):
-    """
-    Detect boundaries between different segments
-    """
-    h, w = label_matrix.shape
-    boundaries = np.zeros((h, w), dtype=np.uint8)
-    
-    # Check horizontal and vertical neighbors for boundary detection
-    for y in range(1, h-1):
-        for x in range(1, w-1):
-            # Check 4-neighborhood
-            if (label_matrix[y, x] != label_matrix[y-1, x] or 
-                label_matrix[y, x] != label_matrix[y+1, x] or
-                label_matrix[y, x] != label_matrix[y, x-1] or
-                label_matrix[y, x] != label_matrix[y, x+1]):
-                boundaries[y, x] = 1
-    
-    return boundaries
 
 def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sampling_ratio=0.1, boundary_thickness=2):
     """
@@ -219,7 +201,7 @@ def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sam
     print(f"Mean shift completed in {time() - start_time:.2f} seconds")
     
     # Assign cluster labels to each pixel
-    label_matrix, cluster_colors = assign_labels(img, features, shifted_features)
+    label_matrix, cluster_colors = assign_labels(img, shifted_features)
 
     # Create the segmented image
     segmented = np.copy(purple_background)
@@ -235,69 +217,5 @@ def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sam
             if foreground_mask[y, x] > 0:  # Only apply to foreground
                 cluster_idx = label_matrix[y, x]
                 segmented[y, x] = cluster_colors[cluster_idx] * 255
-    
-    # Detect boundaries
-    # boundaries = detect_boundaries(label_matrix)
-    
-    # Dilate boundaries for thickness
-    # kernel = np.ones((boundary_thickness, boundary_thickness), np.uint8)
-    # thick_boundaries = cv2.dilate(boundaries, kernel, iterations=1)
-    
-    # Apply white boundaries
-    # segmented_with_boundaries = segmented.copy()
-    # segmented_with_boundaries[thick_boundaries == 1] = [255, 255, 255]  # White
-    
-    # return segmented.astype(np.uint8), segmented_with_boundaries.astype(np.uint8)
+
     return segmented.astype(np.uint8)
-
-
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
-from PyQt5.QtGui import QPixmap, QImage
-import sys
-
-def np_to_qimage(np_img):
-    h, w, ch = np_img.shape
-    bytes_per_line = ch * w
-    return QImage(np_img.data, w, h, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
-
-class MainWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        self.setWindowTitle("Mean Shift Segmentation with QThread")
-
-        self.label = QLabel("No Image")
-        self.button = QPushButton("Start Segmentation")
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.label)
-        layout.addWidget(self.button)
-        self.setLayout(layout)
-
-        # Load image (غير المسار حسب صورتك)
-        self.img = cv2.imread('Images/objects.png')
-        self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
-
-        self.button.clicked.connect(self.start_segmentation)
-
-    def start_segmentation(self):
-        self.worker = MeanShiftWorker(self.img, spatial_bandwidth=0.05, color_bandwidth=0.1, sampling_ratio=0.05)
-        self.worker.progress.connect(self.report_progress)
-        self.worker.finished.connect(self.display_result)
-        self.worker.start()
-
-    def report_progress(self, message):
-        print(message)
-
-    def display_result(self, segmented):
-        print("Displaying result...")
-        qimg = np_to_qimage(segmented)
-        pixmap = QPixmap.fromImage(qimg)
-        self.label.setPixmap(pixmap)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
-
