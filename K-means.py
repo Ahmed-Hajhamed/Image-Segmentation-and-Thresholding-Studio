@@ -12,7 +12,7 @@ X=1
 K=3
 
 # read the image
-image = cv2.imread('objects.png')
+image = cv2.imread('images/objects.png')
 img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 print("the shape of img is:", img.shape)
 
