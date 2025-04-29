@@ -9,7 +9,7 @@ import RegionGrowing as rg
 import OptimalThresholding as ot
 import OtsuThresholding as otsu
 import SpectralThresholding as st
-import shift_mean_segmentation as sm
+import shift_mean_segmentation as ms
 import Agglomerative_Clustering as ac
 import KMeansClustering as km
 from qt_material import apply_stylesheet
@@ -21,7 +21,7 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
         self.setupUi(self)
         self.applySegmentationButton.clicked.connect(lambda: self.ApplySegmentation(self.segmentatioMethodComboBox.currentText()))
         self.applyThresholdingButton.clicked.connect(lambda: self.ApplyThresholding(self.thresholdingMethodComboBox.currentText()))
-        self.loadImageButton.clicked.connect(self.LoadImage)
+        self.loadImageButton.clicked.connect(lambda: self.LoadImage())
         self.manualPointSelectionCheckBox.stateChanged.connect(self.activate_label_press_event)
 
         self.segmentatioMethodComboBox.currentTextChanged.connect(self.resetPoints)
@@ -76,6 +76,7 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
         if self.grayscale_image is not None:
             if method == "Region Growing":
                 gray_image = self.grayscale_image.copy()
+                manualPointsSelection = self.manualPointSelectionCheckBox.isChecked()
                 self.processedImage = rg.ApplyRegionGrowing(gray_image, self.histogram)
                 
             elif method == "K-means Clustering":
@@ -93,11 +94,14 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
 
             elif method == "Mean Shift":
                 rgb_image = self.original_rgb_image.copy()
-                self.processedImage = sm.mean_shift_segmentation(rgb_image)[0]
-                
+                self.worker = ms.MeanShiftWorker(rgb_image, spatial_bandwidth=0.05, color_bandwidth=0.1, sampling_ratio=0.05)
+                self.worker.finished.connect(lambda segmented: self.DisplayImage(segmented, self.processedImageLabel))
+                self.worker.start()
+                        
             self.DisplayImage(self.processedImage, self.processedImageLabel)
 
     def DisplayImage(self, image, label):
+        print("DisplayImage")
         if image is not None:
             if len(image.shape) == 2:  # Grayscale (height, width)
                 height, width = image.shape

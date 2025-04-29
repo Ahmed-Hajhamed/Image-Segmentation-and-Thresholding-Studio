@@ -18,6 +18,8 @@ class ImageSegmentationUI(object):
         self.numberOfThresholdsLayout = QGridLayout()
         self.kMeansClusteringLayout = QGridLayout()
         self.agglomerativeClusteringLayout = QGridLayout()
+        self.meanShiftClusteringLayout = QGridLayout()
+        self.regionGrowingLayout = QGridLayout()
 
         self.loadImageButton = QPushButton("Load Image")
         self.loadImageButton.setStyleSheet("QPushButton { color: white; font-size: 14px; font: bold; }")
@@ -30,9 +32,12 @@ class ImageSegmentationUI(object):
 
         self.originalImageLabel = QLabel()
         self.processedImageLabel = QLabel()
+        self.originalImageLabel.setFixedWidth(480)
+        self.processedImageLabel.setFixedWidth(480)
         
         self.thresholdingControlsLabel = QLabel("Thresholding Controls")
         self.thresholdingControlsLabel.setStyleSheet(LABEL_STYLESHEET)
+        self.thresholdingControlsLabel.setFixedHeight(30)
 
         self.thresholdingMethodComboBox = QComboBox()
         self.thresholdingMethodComboBox.setStyleSheet(COMBOBOX_STYLESHEET)
@@ -77,6 +82,7 @@ class ImageSegmentationUI(object):
         
         self.segmentationControlsLabel = QLabel("Segmentation Controls")
         self.segmentationControlsLabel.setStyleSheet(LABEL_STYLESHEET)
+        self.segmentationControlsLabel.setFixedHeight(30)
 
         self.segmentatioMethodComboBox = QComboBox()
         self.segmentatioMethodComboBox.setStyleSheet(COMBOBOX_STYLESHEET)
@@ -90,7 +96,8 @@ class ImageSegmentationUI(object):
         self.numberOfClustersSlider = QSlider()
         self.numberOfClustersSlider.setOrientation(QtCore.Qt.Horizontal)
         self.numberOfClustersSlider.setRange(3, 16)
-        self.numberOfClustersSlider.valueChanged.connect(lambda value: update_label_text(self.numberOfBlocksLabel, f"Number of Clusters: {value}"))
+        self.numberOfClustersSlider.valueChanged.connect(lambda value: update_label_text(self.numberOfClustersLabel,
+                                                                                          f"Number of Clusters: {value}"))
 
         self.manualPointSelectionCheckBox = QCheckBox("Manual Point Selection")
         self.manualPointSelectionCheckBox.setStyleSheet("QCheckBox { color: white; font-size: 14px; font: bold; }")
@@ -98,6 +105,34 @@ class ImageSegmentationUI(object):
         self.resetPointsButton = QPushButton("Reset Points")
         self.resetPointsButton.setStyleSheet("QPushButton { color: white; font-size: 14px; font: bold; }")
         self.resetPointsButton.clicked.connect(MainWindow.resetPoints)
+
+        self.spatialBandwidthLabel = QLabel(f"Spatial Bandwidth {0.05}")
+        self.spatialBandwidthLabel.setStyleSheet(LABEL_STYLESHEET)
+        self.spatialBandwidthSlider = QSlider()
+        self.spatialBandwidthSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.spatialBandwidthSlider.setRange(0, 100)
+        self.spatialBandwidthSlider.valueChanged.connect(lambda value: \
+                                        update_label_text(self.spatialBandwidthLabel,
+                                                           f"Spatial Bandwidth: {round_to_two_decimal_places(value/100)}"))
+
+        self.colorBandwidthLabel = QLabel(f"Color Bandwidth {0.1}")
+        self.colorBandwidthLabel.setStyleSheet(LABEL_STYLESHEET)
+        self.colorBandwidthSlider = QSlider()
+        self.colorBandwidthSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.colorBandwidthSlider.setRange(0, 100)
+        self.colorBandwidthSlider.valueChanged.connect(lambda value: \
+                update_label_text(self.colorBandwidthLabel, f"Color Bandwidth: {round_to_two_decimal_places(value/100)}"))
+
+        self.regionGrowingLayout.addWidget(self.manualPointSelectionCheckBox, 0, 0, 1, 2)
+        self.regionGrowingLayout.addWidget(self.resetPointsButton, 1, 0, 1, 2)
+        toggle_layout(self.regionGrowingLayout, False)
+
+        self.meanShiftClusteringLayout.addWidget(self.spatialBandwidthLabel, 0, 0, 1, 1)
+        self.meanShiftClusteringLayout.addWidget(self.spatialBandwidthSlider, 0, 1, 1, 1)
+        self.meanShiftClusteringLayout.addWidget(self.colorBandwidthLabel, 1, 0, 1, 1)
+        self.meanShiftClusteringLayout.addWidget(self.colorBandwidthSlider, 1, 1, 1, 1)
+
+        toggle_layout(self.meanShiftClusteringLayout, False)
 
         self.kMeansClusteringLayout.addWidget(self.manualPointSelectionCheckBox, 0, 0, 1, 2)
         self.kMeansClusteringLayout.addWidget(self.numberOfClustersLabel, 1, 0, 1, 1)
@@ -115,8 +150,10 @@ class ImageSegmentationUI(object):
 
         self.segmentationControlsLayout.addWidget(self.segmentationControlsLabel, 0, 0, 1, 2)
         self.segmentationControlsLayout.addWidget(self.segmentatioMethodComboBox, 1, 0, 1, 2)
+        self.segmentationControlsLayout.addLayout(self.regionGrowingLayout, 2, 0, 1, 2)
         self.segmentationControlsLayout.addLayout(self.kMeansClusteringLayout, 2, 0, 1, 2)
         self.segmentationControlsLayout.addLayout(self.agglomerativeClusteringLayout, 2, 0, 1, 2)
+        self.segmentationControlsLayout.addLayout(self.meanShiftClusteringLayout, 2, 0, 1, 2)
         self.segmentationControlsLayout.addWidget(self.applySegmentationButton, 3, 0, 1, 2)
 
         self.imagesLineSeparator = CreateLineSeparator("vertical")
@@ -140,13 +177,34 @@ class ImageSegmentationUI(object):
         if method == "Spectral Thresholding":
             toggle_layout(self.numberOfThresholdsLayout, True)
 
+        elif method == "Otsu Thresholding":
+            toggle_layout(self.numberOfThresholdsLayout, False)
+
+        elif method == "Optimal Thresholding":
+            toggle_layout(self.numberOfThresholdsLayout, False)
+
         elif method == "K-means Clustering":
+            toggle_layout(self.regionGrowingLayout, False)
+            toggle_layout(self.meanShiftClusteringLayout, False)
             toggle_layout(self.agglomerativeClusteringLayout, False)
             toggle_layout(self.kMeansClusteringLayout, True)
         
         elif method == "Agglomerative Clustering":
+            toggle_layout(self.regionGrowingLayout, False)
+            toggle_layout(self.meanShiftClusteringLayout, False)
             toggle_layout(self.kMeansClusteringLayout, False)
             toggle_layout(self.agglomerativeClusteringLayout, True)
+
+        elif method == "Mean Shift":
+            toggle_layout(self.regionGrowingLayout, False)
+            toggle_layout(self.kMeansClusteringLayout, False)
+            toggle_layout(self.agglomerativeClusteringLayout, False)
+            toggle_layout(self.meanShiftClusteringLayout, True)
+        elif method == "Region Growing":
+            toggle_layout(self.kMeansClusteringLayout, False)
+            toggle_layout(self.agglomerativeClusteringLayout, False)
+            toggle_layout(self.meanShiftClusteringLayout, False)
+            # toggle_layout(self.regionGrowingLayout, True)
     
     def update_progress_bar(self, value):
         self.agglomerativeClusteringProgressBar.setValue(int(value)) 
@@ -171,3 +229,6 @@ def toggle_layout(layout, show):
             widget = item.widget()
             if widget is not None:
                 widget.setVisible(show)
+
+def round_to_two_decimal_places(value):
+    return round(value, 2)

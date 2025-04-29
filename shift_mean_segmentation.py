@@ -278,7 +278,7 @@ class MainWindow(QWidget):
         self.setLayout(layout)
 
         # Load image (غير المسار حسب صورتك)
-        self.img = cv2.imread('Images/bizon2.jpeg')
+        self.img = cv2.imread('Images/objects.png')
         self.img = cv2.cvtColor(self.img, cv2.COLOR_BGR2RGB)
 
         self.button.clicked.connect(self.start_segmentation)
