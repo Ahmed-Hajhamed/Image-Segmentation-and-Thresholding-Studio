@@ -110,28 +110,50 @@ class ImageSegmentationUI(object):
         self.spatialBandwidthLabel.setStyleSheet(LABEL_STYLESHEET)
         self.spatialBandwidthSlider = QSlider()
         self.spatialBandwidthSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.spatialBandwidthSlider.setRange(0, 100)
+        self.spatialBandwidthSlider.setRange(1, 100)
         self.spatialBandwidthSlider.valueChanged.connect(lambda value: \
                                         update_label_text(self.spatialBandwidthLabel,
                                                            f"Spatial Bandwidth: {round_to_two_decimal_places(value/100)}"))
+        
+        self.samplingRatioLabel = QLabel(f"Sampling Ratio {0.05}")
+        self.samplingRatioLabel.setStyleSheet(LABEL_STYLESHEET)
+        self.samplingRatioSlider = QSlider()
+        self.samplingRatioSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.samplingRatioSlider.setRange(5, 100)
+        self.samplingRatioSlider.valueChanged.connect(lambda value: \
+                                        update_label_text(self.samplingRatioLabel,
+                                                           f"Sampling Ratio: {round_to_two_decimal_places(value/100)}"))
 
         self.colorBandwidthLabel = QLabel(f"Color Bandwidth {0.1}")
         self.colorBandwidthLabel.setStyleSheet(LABEL_STYLESHEET)
         self.colorBandwidthSlider = QSlider()
         self.colorBandwidthSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.colorBandwidthSlider.setRange(0, 100)
+        self.colorBandwidthSlider.setRange(1, 100)
         self.colorBandwidthSlider.valueChanged.connect(lambda value: \
                 update_label_text(self.colorBandwidthLabel, f"Color Bandwidth: {round_to_two_decimal_places(value/100)}"))
-
+        
+        self.regionGrowingThresholdLabel = QLabel(f"Threshold {10}")
+        self.regionGrowingThresholdLabel.setStyleSheet(LABEL_STYLESHEET)
+        self.regionGrowingThresholdSlider = QSlider()
+        self.regionGrowingThresholdSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.regionGrowingThresholdSlider.setRange(5, 100)
+        self.regionGrowingThresholdSlider.setValue(10)
+        self.regionGrowingThresholdSlider.valueChanged.connect(lambda value: \
+                update_label_text(self.regionGrowingThresholdLabel, f"Threshold: {value}"))
+        
         self.regionGrowingLayout.addWidget(self.manualPointSelectionCheckBox, 0, 0, 1, 2)
-        self.regionGrowingLayout.addWidget(self.resetPointsButton, 1, 0, 1, 2)
+        self.regionGrowingLayout.addWidget(self.regionGrowingThresholdLabel, 1, 0, 1, 1)
+        self.regionGrowingLayout.addWidget(self.regionGrowingThresholdSlider, 1, 1, 1, 1)
+        self.regionGrowingLayout.addWidget(self.resetPointsButton, 2, 0, 1, 2)
         toggle_layout(self.regionGrowingLayout, False)
 
         self.meanShiftClusteringLayout.addWidget(self.spatialBandwidthLabel, 0, 0, 1, 1)
         self.meanShiftClusteringLayout.addWidget(self.spatialBandwidthSlider, 0, 1, 1, 1)
         self.meanShiftClusteringLayout.addWidget(self.colorBandwidthLabel, 1, 0, 1, 1)
         self.meanShiftClusteringLayout.addWidget(self.colorBandwidthSlider, 1, 1, 1, 1)
-
+        self.meanShiftClusteringLayout.addWidget(self.samplingRatioLabel, 2, 0, 1, 1)
+        self.meanShiftClusteringLayout.addWidget(self.samplingRatioSlider, 2, 1, 1, 1)
+        
         toggle_layout(self.meanShiftClusteringLayout, False)
 
         self.kMeansClusteringLayout.addWidget(self.manualPointSelectionCheckBox, 0, 0, 1, 2)
@@ -204,7 +226,7 @@ class ImageSegmentationUI(object):
             toggle_layout(self.kMeansClusteringLayout, False)
             toggle_layout(self.agglomerativeClusteringLayout, False)
             toggle_layout(self.meanShiftClusteringLayout, False)
-            # toggle_layout(self.regionGrowingLayout, True)
+            toggle_layout(self.regionGrowingLayout, True)
     
     def update_progress_bar(self, value):
         self.agglomerativeClusteringProgressBar.setValue(int(value)) 

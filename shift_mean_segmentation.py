@@ -7,8 +7,8 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class MeanShiftWorker(QThread):
-    finished = pyqtSignal(np.ndarray)  # لما يكمل, يرجع صورتين: segmented, segmented_with_boundaries
-    progress = pyqtSignal(str)  # لو تبغى تبعت رسائل نصية أثناء الشغل
+    finished = pyqtSignal(np.ndarray) 
+    progress = pyqtSignal(str) 
 
     def __init__(self, img, spatial_bandwidth=0.1, color_bandwidth=0.1, sampling_ratio=0.1, boundary_thickness=2):
         super().__init__()
@@ -19,9 +19,6 @@ class MeanShiftWorker(QThread):
         self.boundary_thickness = boundary_thickness
 
     def run(self):
-        """
-        هذه الدالة تشتغل لما نستدعي worker.start()
-        """
         self.progress.emit("Starting Mean Shift Segmentation...")
 
         try:
@@ -178,7 +175,7 @@ def mean_shift_segmentation(img, spatial_bandwidth=0.1, color_bandwidth=0.1, sam
     Perform simplified mean shift segmentation with white boundaries
     """
     # Limit the size of the image
-    max_size = 800  # Maximum dimension (width or height)
+    max_size = 500  # Maximum dimension (width or height)
     h, w, _ = img.shape
     if max(h, w) > max_size:
         scale = max_size / max(h, w)

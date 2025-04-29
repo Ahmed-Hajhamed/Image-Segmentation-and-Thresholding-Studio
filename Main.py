@@ -77,7 +77,8 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
             if method == "Region Growing":
                 gray_image = self.grayscale_image.copy()
                 manualPointsSelection = self.manualPointSelectionCheckBox.isChecked()
-                self.processedImage = rg.ApplyRegionGrowing(gray_image, self.histogram)
+                threshold = self.regionGrowingThresholdSlider.value()
+                self.processedImage = rg.ApplyRegionGrowing(gray_image, self.histogram, threshold, manualPointsSelection, self.points)
                 
             elif method == "K-means Clustering":
                 rgb_image = self.original_rgb_image.copy()
@@ -94,7 +95,12 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
 
             elif method == "Mean Shift":
                 rgb_image = self.original_rgb_image.copy()
-                self.worker = ms.MeanShiftWorker(rgb_image, spatial_bandwidth=0.05, color_bandwidth=0.1, sampling_ratio=0.05)
+                spatialBandWidth = UI.round_to_two_decimal_places(self.spatialBandwidthSlider.value()/ 100)
+                colorBandWidth = UI.round_to_two_decimal_places(self.colorBandwidthSlider.value()/ 100)
+                samplingRatio = UI.round_to_two_decimal_places(self.samplingRatioSlider.value()/100)
+                
+                self.worker = ms.MeanShiftWorker(rgb_image, spatial_bandwidth=spatialBandWidth, 
+                                                 color_bandwidth=colorBandWidth, sampling_ratio=samplingRatio)
                 self.worker.finished.connect(lambda segmented: self.DisplayImage(segmented, self.processedImageLabel))
                 self.worker.start()
                         

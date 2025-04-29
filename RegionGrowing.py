@@ -29,8 +29,8 @@ def simultaneous_region_growing(image, seed_points, threshold=10):
     return labels
 
 
-def ApplyRegionGrowing(image, histogram, seed_points=None):
-    if seed_points is None:
+def ApplyRegionGrowing(image, histogram, threshold =10, manual_selection = False, seeds=None):
+    if manual_selection is False:
         top2_indices = np.argsort(histogram)[-2:][::-1]
 
         # Step 2: Pick one seed per peak
@@ -41,8 +41,13 @@ def ApplyRegionGrowing(image, histogram, seed_points=None):
                 y, x = points[0]  # pick the first match (could randomize)
                 seed_points.append((y, x, peak))
                 print(seed_points)
+    else:
+        seed_points = []
+        for x, y in seeds:
+            seed_points.append((y, x, image[y][x]))
+            print(seed_points)
 
         # Step 3: Simultaneous region growing
-    labels = simultaneous_region_growing(image, seed_points, threshold=10)
+    labels = simultaneous_region_growing(image, seed_points, threshold)
     color_labels = cv2.applyColorMap((labels * 127).astype(np.uint8), cv2.COLORMAP_JET)
     return color_labels
