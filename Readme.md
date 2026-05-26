@@ -31,7 +31,7 @@ Advanced clustering and region-based segmentation algorithms implemented purely 
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/yourusername/CV-Segmentation-Thresholding.git](https://github.com/yourusername/CV-Segmentation-Thresholding.git)
+git clone https://github.com/Ahmed-Hajhamed/Image-Segmentation-and-Thresholding-Studio
 cd CV-Segmentation-Thresholding
 
 ```
