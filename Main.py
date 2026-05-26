@@ -107,7 +107,7 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
             self.DisplayImage(self.processedImage, self.processedImageLabel)
 
     def DisplayImage(self, image, label):
-        print("DisplayImage")
+        # print("DisplayImage")
         if image is not None:
             if len(image.shape) == 2:  # Grayscale (height, width)
                 height, width = image.shape
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow, UI.ImageSegmentationUI):
             x = int(event.pos().x() * self.original_rgb_image.shape[1] / self.originalImageLabel.width())
             y = int(event.pos().y() * self.original_rgb_image.shape[0] / self.originalImageLabel.height())
             self.points.append((x, y))
-            print(self.points)
+            # print(self.points)
             cv2.circle(self.rgb_image_to_display, (x, y), 5, (0, 0, 255), -1)
             self.DisplayImage(self.rgb_image_to_display, self.originalImageLabel)
 
