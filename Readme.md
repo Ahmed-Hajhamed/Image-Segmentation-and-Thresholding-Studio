@@ -67,8 +67,33 @@ python main.py
 
 5. Click **Apply Thresholding** or **Apply Segmentation** to process the image and view the output on the right panel.
 
-## Contributors
-- Ahmed Hajhamed
-- Ahmed Etman
-- Zeyad Wail
-- Mohamed Ahmed
+## 👨‍💻 Contributers
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Ahmed-Hajhamed">
+        <img src="https://github.com/Ahmed-Hajhamed.png?size=100" width="100"><br>
+        <b>Ahmed Hajhamed</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/AhmedEtma">
+        <img src="https://github.com/AhmedEtma.png?size=100" width="100"><br>
+        <b>Ahmed Etman</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/zeyad-wail">
+        <img src="https://github.com/zeyad-wail.png?size=100" width="100"><br>
+        <b>Zeyad Wail</b>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/MohamadAhmedAli">
+        <img src="https://github.com/MohamadAhmedAli.png?size=100" width="100"><br>
+        <b>Mohamed Ahmed</b>
+      </a>
+    </td>
+  </tr>
+</table>
